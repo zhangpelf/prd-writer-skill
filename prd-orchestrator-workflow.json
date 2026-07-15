@@ -1,0 +1,287 @@
+{
+  "name": "PRD 流程编排工作流",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "prd-orchestrator",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "f1a2b3c4-d5e6-7890-abcd-ef1234567890",
+      "name": "接收PRD内容",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300],
+      "webhookId": "prd-orchestrator"
+    },
+    {
+      "parameters": {
+        "mode": "manual",
+        "manualFields": [
+          {
+            "name": "content",
+            "value": "={{ $json.body.content }}",
+            "type": "string"
+          },
+          {
+            "name": "topic",
+            "value": "={{ $json.body.topic }}",
+            "type": "string"
+          },
+          {
+            "name": "filename",
+            "value": "={{ 'prd-' + $now.format('YYYY-MM-DD') + '-' + $json.body.topic.replace(/[^a-zA-Z0-9\\u4e00-\\u9fa5]/g, '_') + '.md' }}",
+            "type": "string"
+          },
+          {
+            "name": "savePath",
+            "value": "={{ $json.body.savePath || '' }}",
+            "type": "string"
+          },
+          {
+            "name": "notifyType",
+            "value": "={{ $json.body.notifyType || 'none' }}",
+            "type": "string"
+          },
+          {
+            "name": "notifyTarget",
+            "value": "={{ $json.body.notifyTarget || '' }}",
+            "type": "string"
+          }
+        ]
+      },
+      "id": "g2b3c4d5-e6f7-8901-bcde-f12345678901",
+      "name": "提取请求参数",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "fileName": "={{ ($json.savePath ? $json.savePath + '/' : '') + $json.filename }}",
+        "data": "={{ $json.content }}",
+        "options": {
+          "append": false
+        }
+      },
+      "id": "h3c4d5e6-f7a8-9012-cdef-123456789012",
+      "name": "保存PRD文件",
+      "type": "n8n-nodes-base.writeBinaryFile",
+      "typeVersion": 1,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "cond-1",
+              "leftValue": "={{ $json.notifyType }}",
+              "rightValue": "slack",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ]
+        }
+      },
+      "id": "i4d5e6f7-a8b9-0123-defa-234567890123",
+      "name": "是否通知Slack",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [850, 200]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "cond-2",
+              "leftValue": "={{ $json.notifyType }}",
+              "rightValue": "email",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ]
+        }
+      },
+      "id": "j5e6f7a8-b9c0-1234-efab-345678901234",
+      "name": "是否通知邮件",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [850, 400]
+    },
+    {
+      "parameters": {
+        "channel": "={{ $json.notifyTarget }}",
+        "text": "={{ 'PRD已生成：' + $json.topic + '\\n文件名：' + $json.filename + '\\n时间：' + $now.format('YYYY-MM-DD HH:mm:ss') }}"
+      },
+      "id": "k6f7a8b9-c0d1-2345-fabc-456789012345",
+      "name": "发送Slack通知",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.1,
+      "position": [1050, 150]
+    },
+    {
+      "parameters": {
+        "toEmail": "={{ $json.notifyTarget }}",
+        "subject": "={{ 'PRD已生成：' + $json.topic }}",
+        "message": "={{ '<h3>PRD已生成</h3><p>主题：' + $json.topic + '</p><p>文件名：' + $json.filename + '</p><p>时间：' + $now.format('YYYY-MM-DD HH:mm:ss') + '</p>' }}"
+      },
+      "id": "l7a8b9c0-d1e2-3456-abcd-567890123456",
+      "name": "发送邮件通知",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [1050, 450]
+    },
+    {
+      "parameters": {
+        "mode": "manual",
+        "manualFields": [
+          {
+            "name": "notificationSent",
+            "value": "={{ $json.notifyType !== 'none' && $json.notifyType !== '' ? true : false }}",
+            "type": "boolean"
+          }
+        ]
+      },
+      "id": "n9c0d1e2-f3a4-5678-cdef-789012345678",
+      "name": "合并通知状态",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [1050, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": true,\n  \"message\": \"PRD 保存成功\",\n  \"file\": $json.filename,\n  \"path\": ($json.savePath || '默认目录') + '/' + $json.filename,\n  \"topic\": $json.topic,\n  \"notifyType\": $json.notifyType,\n  \"timestamp\": $now.toISO()\n}",
+        "options": {}
+      },
+      "id": "m8b9c0d1-e2f3-4567-bcde-678901234567",
+      "name": "返回结果",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1250, 300]
+    }
+  ],
+  "connections": {
+    "接收PRD内容": {
+      "main": [
+        [
+          {
+            "node": "提取请求参数",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "提取请求参数": {
+      "main": [
+        [
+          {
+            "node": "保存PRD文件",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "保存PRD文件": {
+      "main": [
+        [
+          {
+            "node": "是否通知Slack",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "是否通知邮件",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "合并通知状态",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "是否通知Slack": {
+      "main": [
+        [
+          {
+            "node": "发送Slack通知",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "是否通知邮件": {
+      "main": [
+        [
+          {
+            "node": "发送邮件通知",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "合并通知状态": {
+      "main": [
+        [
+          {
+            "node": "返回结果",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "发送Slack通知": {
+      "main": [
+        [
+          {
+            "node": "返回结果",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "发送邮件通知": {
+      "main": [
+        [
+          {
+            "node": "返回结果",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "errorWorkflow": ""
+  },
+  "staticData": null,
+  "tags": []
+}
