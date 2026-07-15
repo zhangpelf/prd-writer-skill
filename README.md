@@ -37,7 +37,7 @@
 
 | 问题 | 解决方案 |
 |------|---------|
-| 没有免费 LLM API | 使用你已有的 Claude Code / Cursor，无需额外付费 |
+| LLM API繁琐 | 使用你已有的 Claude Code / Cursor，无需额外调整 |
 | n8n 做生成逻辑太复杂 | n8n 只做擅长的：流程编排、文件管理、通知推送 |
 | 需要人工审核 | Claude 对话本身就是「人工+AI协作」，天然适合生成内容 |
 | 团队协作需求 | n8n 负责分发、归档、通知，Skill 负责内容质量 |
@@ -256,7 +256,7 @@ n8n-workflows/
 ## 常见问题
 
 ### Q: 为什么不让 n8n 直接调用 LLM 生成？
-A: 这样做需要配置付费 LLM API Key（OpenAI/Anthropic）。本方案利用你已有的 Claude Code 环境，零额外费用。
+A: 这样做需要配置 LLM API Key（OpenAI/Anthropic）。本方案利用你已有的 Claude Code 环境，零额外调整。
 
 ### Q: Claude Code 生成的 PRD 质量如何？
 A: 通过 Skill 中的结构化 Prompt 和模板约束，Claude 可以生成专业级 PRD。关键是提供充分的产品上下文信息。
