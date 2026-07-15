@@ -302,10 +302,5 @@ A: n8n 的 **Execution** 页面记录了每次调用的完整日志。你也可�
 
 ---
 
-## 旧版工作流
-
-如果你仍然希望使用「n8n 直接调用 LLM」的方案（需要 OpenAI API Key），旧版工作流 `prd-generator-workflow.json` 仍然保留在目录中。
-
----
 
 *版本：2.0 | 更新：2026-07-15 | 架构：双组件（Skill + n8n）*
