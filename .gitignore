@@ -1,0 +1,18 @@
+# macOS
+.DS_Store
+*.swp
+*.swo
+*~
+
+# Node / n8n local data (if any)
+node_modules/
+.editorconfig
+
+# IDE
+.vscode/
+.idea/
+
+# Secrets / local config (never commit)
+*.local.json
+.env
+.env.*
