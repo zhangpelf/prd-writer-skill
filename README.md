@@ -119,7 +119,7 @@ curl -X POST https://your-n8n-instance/webhook/prd-orchestrator \
   -d '{
     "topic": "智能投研Agent平台",
     "content": "[粘贴完整的 PRD Markdown 内容]",
-    "savePath": "/Users/zhangpeifu/prd-reports"
+    "savePath": "~/Downloads/prd-reports"
   }'
 ```
 
@@ -129,7 +129,7 @@ curl -X POST https://your-n8n-instance/webhook/prd-orchestrator \
   "success": true,
   "message": "PRD 保存成功",
   "file": "prd-2026-07-15-智能投研Agent平台.md",
-  "path": "/Users/zhangpeifu/prd-reports/prd-2026-07-15-智能投研Agent平台.md",
+  "path": "~/Downloads/prd-reports/prd-2026-07-15-智能投研Agent平台.md",
   "topic": "智能投研Agent平台",
   "notifyType": "none",
   "timestamp": "2026-07-15T12:34:56.789Z"
@@ -144,7 +144,7 @@ curl -X POST https://your-n8n-instance/webhook/prd-orchestrator \
   -d '{
     "topic": "智能投研Agent平台",
     "content": "[PRD Markdown 内容]",
-    "savePath": "/Users/zhangpeifu/prd-reports",
+    "savePath": "~/Downloads/prd-reports",
     "notifyType": "slack",
     "notifyTarget": "#product-team"
   }'
@@ -167,7 +167,7 @@ curl -X POST https://your-n8n-instance/webhook/prd-orchestrator \
   -d "{
     \"topic\": \"$TOPIC\",
     \"content\": $(echo "$CONTENT" | jq -R -s .),
-    \"savePath\": "/Users/zhangpeifu/prd-reports",
+    \"savePath\": "~/Downloads/prd-reports",
     \"notifyType\": "email",
     \"notifyTarget\": "team@company.com"
   }"
@@ -201,7 +201,7 @@ chmod +x send-prd.sh
 |------|------|------|------|------|
 | `topic` | string | ✅ | PRD 主题/产品名称 | "智能投研Agent平台" |
 | `content` | string | ✅ | 完整 PRD Markdown 内容 | "## 1. 概述\n..." |
-| `savePath` | string | ❌ | 保存目录（默认当前目录） | "/Users/zhangpeifu/prd-reports" |
+| `savePath` | string | ❌ | 保存目录（默认当前目录） | "~/Downloads/prd-reports" |
 | `notifyType` | string | ❌ | 通知类型：`none`/`slack`/`email` | "slack" |
 | `notifyTarget` | string | 条件必填 | 通知目标（频道/邮箱） | "#product-team" |
 

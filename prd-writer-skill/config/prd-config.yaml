@@ -1,0 +1,65 @@
+# ==============================================================================
+# PRD 自动化撰写与流转协同配置文件
+# ==============================================================================
+
+prd_writer:
+  # ----------------------------------------------------------------------------
+  # 1. 本地存储路径规划
+  # ----------------------------------------------------------------------------
+  # 主保存目录：支持绝对路径，或使用 {project_root} 宏指向当前工程根目录
+  local_output_dir: "{project_root}/docs"
+
+  # 备份目录：本地固定归档兜底目录 (必须是展开的绝对路径，避免使用 ~)
+  local_backup_dir: "~/Downloads/prd-reports"
+
+  # 文件名前缀与命名格式：默认【PRD】{需求名称}.md
+  title_prefix: "【PRD】"
+
+  # 强制自动保存到本地：生成完毕后必须执行文件落盘 (强约束)
+  auto_save_local: true
+
+  # ----------------------------------------------------------------------------
+  # 2. 团队协同推送与 Webhook 归档
+  # ----------------------------------------------------------------------------
+  # 是否开启远程推送 (设为 false 时仅在对话中输出并保存本地文件)
+  auto_publish: false
+
+  # Webhook 目标地址：
+  # - 可直接填入飞书机器人 Webhook (https://open.feishu.cn/open-apis/bot/v2/hook/xxxx)
+  # - 或企业微信机器人 Webhook (https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=xxxx)
+  # - 或钉钉机器人 Webhook (https://oapi.dingtalk.com/robot/send?access_token=xxxx)
+  # - 或统一 n8n 流程编排网关地址 (http://localhost:5678/webhook/prd-orchestrator)
+  webhook_url: ""
+
+  # 通知渠道类型：
+  # - feishu: 飞书富文本/交互卡片消息
+  # - wecom: 企业微信 Markdown 机器人消息
+  # - dingtalk: 钉钉 Markdown 机器人消息
+  # - email: 邮件通知 (需通过统一网关或 n8n 节点)
+  # - slack: Slack 消息 (备选)
+  # - none: 不发送消息通知，仅调用归档接口
+  notify_type: "feishu"
+
+  # 消息接收目标 (可选：群机器人 Token、群聊 Key 或收件邮箱)
+  notify_target: ""
+
+  # ----------------------------------------------------------------------------
+  # 3. 业务模式与前端组件规范偏好
+  # ----------------------------------------------------------------------------
+  # 默认需求场景：
+  # - "迭代": 存量页面/功能改动，采用四列表格 (模块/现状/预期/描述)
+  # - "新增": 全新功能/独立页面，采用两列表格 (原型/描述)
+  # - null: 由 AI 根据用户输入自动判断
+  default_scene: null
+
+  # 推荐前端组件库规范 (用于在页面详述中标准化标注筛选项与表单组件类型):
+  # 可选: "Ant Design" | "Element Plus" | "TDesign" | "Semi Design"
+  design_system: "Ant Design"
+
+  # 安全与合规预设：
+  # standard: 通用数据安全脱敏、操作审计留存不少于 180 天、HTTPS 加密与内容合规
+  compliance_preset: "standard"
+
+  # API 接口规范偏好：
+  # 统一响应结构：{ code: 200, message: "操作成功", data: {}, timestamp: ... }
+  response_wrapper: true\n
