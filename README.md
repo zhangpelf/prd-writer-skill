@@ -1,5 +1,7 @@
 # PRD 自动生成工作流（双组件架构）
 
+> **本文档为仓库总览。** Skill 的完整规范 —— 七大章节模板、Step 0~8 完整流水线、多端协同通知载荷、配置文件说明与三场景验收回执 —— 请以 [`prd-writer-skill/SKILL.md`](prd-writer-skill/SKILL.md) 与 [`prd-writer-skill/README.md`](prd-writer-skill/README.md)（v2.1）为准；本文与 Skill 文档若有冲突，以 Skill 文档为准。
+
 ## 概述
 
 这是一个**零 LLM API 费用**的 PRD 工作流方案，由两部分组成：
@@ -14,32 +16,33 @@
 ## 架构设计
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                    第一部分：PRD 撰写技能                      │
-│                   （Claude Code / 本地 AI）                    │
-│                                                             │
-│  用户对话 → 结构化 Prompt → 完整 PRD Markdown                │
-│           （零额外 API 费用）                                  │
-└──────────────────────┬──────────────────────────────────────┘
+┌────────────────────────────────────────────────────────────────────────┐
+│                    第一部分：PRD 撰写技能                              │
+│                   （Claude Code / 本地 AI）                            │
+│                                                                        │
+│  用户对话 → 结构化 Prompt → 完整 PRD Markdown                          │
+│           （零额外 API 费用）                                          │
+└──────────────────────┬─────────────────────────────────────────────────┘
                        │ POST {topic, content, notifyType}
                        ▼
-┌─────────────────────────────────────────────────────────────┐
-│                   第二部分：PRD 流程编排工作流                   │
-│                      （n8n 实例）                              │
-│                                                             │
-│  Webhook 接收 → 格式化文件名 → 保存文件 → 可选通知(Slack/邮件) │
-│                                                             │
-│  返回确认：{success, file, path, timestamp}                   │
-└─────────────────────────────────────────────────────────────┘
+┌────────────────────────────────────────────────────────────────────────┐
+│                   第二部分：PRD 流程编排工作流                         │
+│                      （n8n 实例）                                      │
+│                                                                        │
+│  Webhook 接收 → 格式化文件名 → 保存文件 → 可选通知(飞书/企微/钉钉/邮件)│
+│                                                                        │
+│  返回确认：{success, file, path, timestamp}                            │
+└────────────────────────────────────────────────────────────────────────┘
 ```
 
 ### PRD 文档结构
 
-PRD 遵循标准的 **6 章节模板**，覆盖从业务目标到技术实现的完整链路：
+PRD 遵循标准的 **七大章节模板**（版本历史 + 6 个正式章节），覆盖从业务目标到技术实现的完整链路：
 
 | 章节 | 内容 | 适用读者 |
 |------|------|---------|
-| **1. 概述** | 产品背景、目标用户画像、核心目标、成功指标(KPI) | 所有人 |
+| **版本历史** | 文档版本、撰写时间、作者、变更标识与说明（合并更新时追加新行，保留历史） | 所有人 |
+| **1. 概述** | 一句话描述、产品背景、目标用户画像、核心目标、成功指标(KPI) | 所有人 |
 | **2. 功能需求** | 用户故事、P0/P1/P2 分级功能列表、Given/When/Then 验收标准 | 产品 + 开发 |
 | **3. 非功能需求** | 性能指标(P95 响应时间)、安全合规、兼容性、可扩展性 | 架构 + 运维 |
 | **4. 数据模型与接口** | 核心实体定义(ER)、API 接口清单(方法/路径/请求/响应/错误码) | 开发 |
@@ -70,16 +73,22 @@ PRD 遵循标准的 **6 章节模板**，覆盖从业务目标到技术实现的
 
 ### 第一步：安装 PRD 撰写 Skill
 
-1. 将 `prd-writer-skill/` 目录复制到你的 Skills 目录：
+1. 将 `prd-writer-skill/` 目录整体复制到你的 Skills 目录（**必须包含 `config/prd-config.yaml`**）：
    - Claude Code: `~/.claude/skills/prd-writer/`
    - 或项目本地: `[project]/.claude/skills/prd-writer/`
 
-2. 在 Claude Code 中输入以下任一方式触发：
+2. 按需编辑 `config/prd-config.yaml`：
+   - `local_output_dir` / `local_backup_dir`：本地主保存目录与备份目录
+   - `webhook_url` / `notify_type`：归档地址与通知渠道（`feishu` / `wecom` / `dingtalk` / `email` / `slack`）
+   - `design_system`：页面详述中推荐的组件库规范（如 `Ant Design`）
+   - 留空 `webhook_url` 或保持 `auto_publish: false` 时，仅生成本地文件，自动跳过归档
+
+3. 在 Claude Code 中输入以下任一方式触发：
    - `/prd-writer`
    - `帮我写一份 PRD`
    - `撰写产品需求文档`
 
-3. 跟随 Claude 的引导，提供产品信息，分章节生成 PRD
+4. 跟随 Claude 的引导，提供产品信息，分章节生成 PRD
 
 ### 第二步：导入 n8n 工作流
 
@@ -266,11 +275,13 @@ n8n 支持 400+ 集成，你可以添加：
 ## 文件清单
 
 ```
-n8n-workflows/
-├── prd-writer-skill/
-│   └── SKILL.md          # PRD 撰写技能（Claude Code 使用）
-├── prd-orchestrator-workflow.json  # n8n 流程编排工作流
-└── README.md             # 本文档
+prd-writer-skill/
+├── SKILL.md                        # PRD 撰写技能（Step 0~8 完整流水线）
+├── README.md                       # Skill 详细说明（v2.1）
+└── config/
+    └── prd-config.yaml            # 保存路径、归档开关、Webhook 与组件库规范
+prd-orchestrator-workflow.json      # n8n 流程编排工作流
+README.md                           # 仓库总览（本文档）
 ```
 
 ---
@@ -326,8 +337,8 @@ A: n8n 的 **Execution** 页面记录了每次调用的完整日志。你也可�
 
 ## 旧版工作流
 
-如果你仍然希望使用「n8n 直接调用 LLM」的方案（需要 OpenAI API Key），旧版工作流 `prd-generator-workflow.json` 仍然保留在目录中。
+历史上曾提供「n8n 直接调用 LLM」的旧版工作流（需要 OpenAI API Key）。该文件 `prd-generator-workflow.json` 已在 commit `08c7323` 中删除，当前仓库不再包含；如需参考请查阅该提交之前的历史版本。
 
 ---
 
-*版本：2.0 | 更新：2026-07-15 | 架构：双组件（Skill + n8n）*
+*仓库总览：主体沿用 v2.0 | Skill 规范已迭代至 v2.1，详见 [`prd-writer-skill/README.md`](prd-writer-skill/README.md) | 架构：双组件（Skill + n8n）*
