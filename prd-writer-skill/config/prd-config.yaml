@@ -62,4 +62,4 @@ prd_writer:
 
   # API 接口规范偏好：
   # 统一响应结构：{ code: 200, message: "操作成功", data: {}, timestamp: ... }
-  response_wrapper: true\n
+  response_wrapper: true
